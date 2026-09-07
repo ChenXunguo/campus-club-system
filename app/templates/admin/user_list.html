@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-people me-2 text-primary"></i>用户管理</h4>
+
+<div class="card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small">关键词</label>
+            <input type="text" name="keyword" class="form-control" placeholder="用户名 / 姓名 / 学号" value="{{ filters.keyword }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">角色</label>
+            <select name="role" class="form-select">
+                <option value="">全部角色</option>
+                <option value="student" {% if filters.role == 'student' %}selected{% endif %}>学生</option>
+                <option value="admin_club" {% if filters.role == 'admin_club' %}selected{% endif %}>社团管理员</option>
+                <option value="admin_sys" {% if filters.role == 'admin_sys' %}selected{% endif %}>系统管理员</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>搜索</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>姓名</th>
+                    <th>学号</th>
+                    <th>所属社团</th>
+                    <th>注册时间</th>
+                    <th>当前角色</th>
+                    <th class="text-end">权限分配</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td class="fw-bold">{{ u.username }}</td>
+                    <td>{{ u.real_name or '-' }}</td>
+                    <td>{{ u.student_id or '-' }}</td>
+                    <td>{{ u.club.name if u.club else '-' }}</td>
+                    <td class="small text-secondary">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '-' }}</td>
+                    <td><span class="badge bg-primary">{{ u.role_label }}</span></td>
+                    <td class="text-end">
+                        <form method="post" action="{{ url_for('admin.user_role', user_id=u.id) }}" class="d-inline-flex gap-1">
+                            <select name="role" class="form-select form-select-sm" {% if u.id == current_user.id %}disabled{% endif %}>
+                                <option value="student" {% if u.role == 'student' %}selected{% endif %}>学生</option>
+                                <option value="admin_club" {% if u.role == 'admin_club' %}selected{% endif %}>社团管理员</option>
+                                <option value="admin_sys" {% if u.role == 'admin_sys' %}selected{% endif %}>系统管理员</option>
+                            </select>
+                            {% if u.id != current_user.id %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">修改</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-secondary py-4">暂无用户。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

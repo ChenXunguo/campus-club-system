@@ -1,0 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+校园社团活动管理系统 —— 依赖清单
+说明：Pillow 因本机 Python 3.14 兼容性需使用 11.3 及以上版本，
+其余版本与项目说明书保持一致。
+"""
+Flask==2.3.3
+Werkzeug==2.3.8
+PyMySQL==1.1.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.4
+Flask-Login==0.6.2
+qrcode==7.4.2
+Pillow>=11.3.0
+python-dotenv==1.2.3
+pytest==9.1.1

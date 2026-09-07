@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}签到二维码 - {{ activity.title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card p-4 text-center">
+            <h5 class="fw-bold mb-1">{{ activity.title }}</h5>
+            <p class="text-secondary small mb-4">{{ activity.start_time.strftime('%Y-%m-%d %H:%M') }} · {{ activity.location or '地点待定' }}</p>
+            <div class="qr-box mx-auto mb-3">
+                <img src="{{ qr_data_uri }}" alt="签到二维码">
+            </div>
+            <p class="fw-bold text-success mb-1"><i class="bi bi-check-circle me-1"></i>签到码已生成</p>
+            <p class="small text-secondary mb-4">学生使用手机扫描二维码即可签到<br>有效期 10 分钟，过期后请重新生成</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ url_for('admin.checkin_generate', activity_id=activity.id) }}" class="btn btn-primary"><i class="bi bi-arrow-clockwise me-1"></i>重新生成</a>
+                <a href="{{ url_for('admin.checkin_manage', activity_id=activity.id) }}" class="btn btn-outline-secondary">返回签到管理</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

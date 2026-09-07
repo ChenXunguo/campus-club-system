@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}活动归档{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-archive me-2 text-primary"></i>活动总结归档</h4>
+
+<!-- 检索 -->
+<div class="card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small">关键词</label>
+            <input type="text" name="keyword" class="form-control" placeholder="活动标题 / 总结内容" value="{{ filters.keyword }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">学期</label>
+            <select name="semester" class="form-select">
+                <option value="">全部学期</option>
+                {% for s in semesters %}
+                <option value="{{ s }}" {% if filters.semester == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">社团</label>
+            <select name="club_id" class="form-select">
+                <option value="">全部社团</option>
+                {% for c in clubs %}
+                <option value="{{ c.id }}" {% if filters.club_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>检索</button>
+        </div>
+    </form>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for a in archives %}
+    <div class="col">
+        <div class="card h-100 card-hover">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-primary">{{ a.activity.club.name if a.activity.club else '未知社团' }}</span>
+                    <span class="badge bg-light text-dark border">{{ a.semester or '未标注学期' }}</span>
+                </div>
+                <h6 class="fw-bold text-truncate">{{ a.activity.title }}</h6>
+                <p class="small text-secondary mb-3">归档时间：{{ a.archive_time.strftime('%Y-%m-%d') }}</p>
+                <a href="{{ url_for('archive.detail', archive_id=a.id) }}" class="btn btn-sm btn-outline-primary">查看总结</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center text-secondary py-5">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        暂无符合条件的归档记录。
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

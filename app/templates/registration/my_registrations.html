@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "macros.html" import reg_status_badge %}
+{% block title %}我的报名{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-clipboard-check me-2 text-primary"></i>我的报名</h4>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>活动</th>
+                    <th>社团</th>
+                    <th>活动时间</th>
+                    <th>报名时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in registrations %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('activity.detail', activity_id=r.activity_id) }}" class="fw-bold text-decoration-none">{{ r.activity.title }}</a>
+                    </td>
+                    <td>{{ r.activity.club.name if r.activity.club else '-' }}</td>
+                    <td class="small text-secondary">{{ r.activity.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="small text-secondary">{{ r.apply_time.strftime('%Y-%m-%d %H:%M') if r.apply_time else '-' }}</td>
+                    <td>{{ reg_status_badge(r.status) }}</td>
+                    <td>
+                        {% if r.status in ('pending', 'approved') %}
+                        <form method="post" action="{{ url_for('registration.cancel', reg_id=r.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="确定取消该活动的报名吗？">取消</button>
+                        </form>
+                        {% else %}
+                        <span class="text-secondary small">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-secondary py-4">您还没有报名任何活动，<a href="{{ url_for('activity.list_activities') }}">去活动广场看看</a>。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

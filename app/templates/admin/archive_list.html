@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}归档管理{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-archive me-2 text-primary"></i>归档管理</h4>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>活动</th>
+                    <th>社团</th>
+                    <th>学期</th>
+                    <th>归档时间</th>
+                    <th>附件</th>
+                    <th class="text-end">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in archives %}
+                <tr>
+                    <td class="fw-bold">{{ a.activity.title }}</td>
+                    <td>{{ a.activity.club.name if a.activity.club else '-' }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ a.semester or '-' }}</span></td>
+                    <td class="small text-secondary">{{ a.archive_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{% if a.attachment_path %}<i class="bi bi-paperclip text-secondary" title="有附件"></i>{% else %}-{% endif %}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('archive.detail', archive_id=a.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>查看</a>
+                        <a href="{{ url_for('admin.archive_create') }}" class="btn btn-sm btn-outline-secondary">再次归档</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-secondary py-4">暂无归档记录，<a href="{{ url_for('admin.archive_create') }}">上传活动总结</a>。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

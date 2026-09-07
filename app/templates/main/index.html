@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "macros.html" import activity_card %}
+{% block title %}首页{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<div class="hero mb-4">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1 class="mb-2">校园社团活动管理系统</h1>
+            <p class="lead mb-4 mb-lg-0">统一发布 · 在线报名 · 扫码签到 · 总结归档 —— 让社团活动管理更高效</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="fs-3 fw-bold">{{ total_activities }}</div>
+                    <div class="small opacity-75">活动总数</div>
+                </div>
+                <div class="col-4">
+                    <div class="fs-3 fw-bold">{{ total_clubs }}</div>
+                    <div class="small opacity-75">社团数量</div>
+                </div>
+                <div class="col-4">
+                    <div class="fs-3 fw-bold">{{ total_users }}</div>
+                    <div class="small opacity-75">注册用户</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not current_user.is_authenticated %}
+<div class="text-center mb-4">
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-2"><i class="bi bi-box-arrow-in-right me-1"></i>登录系统</a>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg"><i class="bi bi-person-plus me-1"></i>注册账号</a>
+</div>
+{% endif %}
+
+<!-- 即将开始 -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0"><i class="bi bi-rocket-takeoff me-2 text-primary"></i>即将开始 / 进行中</h5>
+    <a href="{{ url_for('activity.list_activities') }}" class="btn btn-sm btn-link">查看全部 <i class="bi bi-arrow-right"></i></a>
+</div>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+    {% for a in featured_activities %}
+        {{ activity_card(a) }}
+    {% else %}
+        <div class="col-12 text-center text-secondary py-4">暂无即将开始的活动，敬请期待。</div>
+    {% endfor %}
+</div>
+
+<!-- 最新活动 -->
+<h5 class="mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>最新发布</h5>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+    {% for a in recent_activities %}
+        {{ activity_card(a) }}
+    {% else %}
+        <div class="col-12 text-center text-secondary py-4">暂无活动。</div>
+    {% endfor %}
+</div>
+
+<!-- 热门社团 -->
+<h5 class="mb-3"><i class="bi bi-people me-2 text-primary"></i>学生社团</h5>
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+    {% for c in clubs %}
+    <div class="col">
+        <div class="card text-center p-3 h-100">
+            <div class="club-icon mx-auto mb-2">{{ c.name[0] }}</div>
+            <div class="small fw-bold text-truncate">{{ c.name }}</div>
+            <div class="small text-secondary">{{ c.category or '未分类' }} · {{ c.member_count }}人</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

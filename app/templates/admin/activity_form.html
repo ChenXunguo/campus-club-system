@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑活动' if activity else '发布活动' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4">
+            <h4 class="mb-4"><i class="bi bi-{{ 'pencil' if activity else 'plus-circle' }} me-2 text-primary"></i>{{ '编辑活动' if activity else '发布活动' }}</h4>
+
+            {% set v = activity or form %}
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">活动标题 <span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control" required value="{{ v.title or '' }}">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">所属社团 <span class="text-danger">*</span></label>
+                        <select name="club_id" class="form-select" required {% if activity and current_user.is_club_admin %}disabled{% endif %}>
+                            {% for c in clubs %}
+                            <option value="{{ c.id }}" {% if (v.club_id or activity.club_id) == c.id %}selected{% endif %}>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if activity and current_user.is_club_admin %}
+                        <input type="hidden" name="club_id" value="{{ activity.club_id }}">
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">最大参与人数</label>
+                        <input type="number" name="max_participants" class="form-control" min="1" value="{{ v.max_participants or '' }}" placeholder="留空表示不限">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">开始时间 <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="start_time" class="form-control" required
+                               value="{{ v.start_time.strftime('%Y-%m-%dT%H:%M') if v.start_time else '' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">结束时间 <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="end_time" class="form-control" required
+                               value="{{ v.end_time.strftime('%Y-%m-%dT%H:%M') if v.end_time else '' }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">活动地点</label>
+                    <input type="text" name="location" class="form-control" value="{{ v.location or '' }}" placeholder="例如：大学生活动中心 301">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">封面图片</label>
+                    <input type="file" name="cover_image" class="form-control" accept="image/*">
+                    <div class="form-text">支持 png/jpg/gif/webp，建议 16:9，单张不超过 10MB。</div>
+                    {% if activity and activity.cover_image %}
+                    <div class="mt-2">
+                        <img src="{{ url_for('static', filename='uploads/' ~ activity.cover_image) }}" style="max-height:80px;" class="rounded border">
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">活动详情（富文本）</label>
+                    <!-- Quill 富文本编辑器 -->
+                    <div id="quill-editor" style="height:220px;"></div>
+                    <textarea name="description" id="description-input" class="d-none">{{ v.description or '' }}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ '保存修改' if activity else '发布活动' }}</button>
+                    <a href="{{ url_for('admin.activity_list') }}" class="btn btn-outline-secondary">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+(function () {
+    var editorEl = document.getElementById('quill-editor');
+    var input = document.getElementById('description-input');
+    var quill = new Quill(editorEl, {
+        theme: 'snow',
+        placeholder: '请输入活动详情...',
+        modules: { toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['link', 'blockquote', 'code-block'],
+            ['clean']
+        ]}
+    });
+    // 回填已有内容
+    if (input.value) {
+        quill.root.innerHTML = input.value;
+    }
+    // 提交前同步到隐藏 textarea
+    document.querySelector('form').addEventListener('submit', function () {
+        input.value = quill.root.innerHTML;
+    });
+})();
+</script>
+{% endblock %}

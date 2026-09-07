@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "macros.html" import activity_card %}
+{% block title %}活动广场{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-calendar-event me-2 text-primary"></i>活动广场</h4>
+    {% if current_user.is_authenticated and current_user.role in ('admin_club', 'admin_sys') %}
+    <a href="{{ url_for('admin.activity_create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>发布活动</a>
+    {% endif %}
+</div>
+
+<!-- 筛选 -->
+<div class="card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small">关键词</label>
+            <input type="text" name="keyword" class="form-control" placeholder="标题 / 地点 / 详情" value="{{ filters.keyword }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">所属社团</label>
+            <select name="club_id" class="form-select">
+                <option value="">全部社团</option>
+                {% for c in clubs %}
+                <option value="{{ c.id }}" {% if filters.club_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">活动状态</label>
+            <select name="status" class="form-select">
+                <option value="">全部状态</option>
+                <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>待发布</option>
+                <option value="ongoing" {% if filters.status == 'ongoing' %}selected{% endif %}>进行中</option>
+                <option value="ended" {% if filters.status == 'ended' %}selected{% endif %}>已结束</option>
+                <option value="cancelled" {% if filters.status == 'cancelled' %}selected{% endif %}>已取消</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>搜索</button>
+        </div>
+    </form>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for a in activities %}
+        {{ activity_card(a) }}
+    {% else %}
+        <div class="col-12 text-center text-secondary py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            没有符合条件的活动。
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

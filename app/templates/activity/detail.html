@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% from "macros.html" import status_badge, reg_status_badge %}
+{% block title %}{{ activity.title }}{% endblock %}
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 封面 -->
+        <div class="card overflow-hidden mb-4">
+            {% if activity.cover_image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ activity.cover_image) }}" class="w-100" style="max-height:360px;object-fit:cover;" alt="封面">
+            {% else %}
+            <div class="activity-cover" style="height:220px;"><i class="bi bi-image"></i></div>
+            {% endif %}
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h3 class="fw-bold mb-0">{{ activity.title }}</h3>
+                    {{ status_badge(activity.status) }}
+                </div>
+                <p class="text-secondary mb-3">
+                    <span class="badge bg-primary me-1">{{ activity.club.name if activity.club else '未知社团' }}</span>
+                    发布人：{{ activity.publisher.real_name or activity.publisher.username if activity.publisher else '-' }}
+                </p>
+                <div class="row g-3 text-secondary mb-3">
+                    <div class="col-md-6"><i class="bi bi-clock me-1"></i>开始：{{ activity.start_time.strftime('%Y-%m-%d %H:%M') }}</div>
+                    <div class="col-md-6"><i class="bi bi-clock-history me-1"></i>结束：{{ activity.end_time.strftime('%Y-%m-%d %H:%M') }}</div>
+                    <div class="col-md-6"><i class="bi bi-geo-alt me-1"></i>地点：{{ activity.location or '未设置' }}</div>
+                    <div class="col-md-6"><i class="bi bi-people me-1"></i>报名：{{ activity.participant_slots }}</div>
+                </div>
+                <hr>
+                <h6 class="fw-bold"><i class="bi bi-file-text me-1"></i>活动详情</h6>
+                <div class="rich-content">
+                    {{ activity.description | safe if activity.description else '<p class="text-secondary">暂无详情。</p>' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 报名操作 -->
+        {% if current_user.is_authenticated and current_user.is_student %}
+        <div class="card p-4 mb-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-clipboard-check me-1"></i>报名状态</h6>
+            {% if my_registration %}
+                <p class="mb-2">我的报名状态：{{ reg_status_badge(my_registration.status) }}</p>
+                {% if my_registration.status == 'approved' %}
+                    {% if my_checkin %}
+                        <p class="text-success"><i class="bi bi-check-circle me-1"></i>已完成签到（{{ my_checkin.checkin_time.strftime('%Y-%m-%d %H:%M:%S') }}，{{ my_checkin.checkin_type_label }}）</p>
+                    {% else %}
+                        <p class="text-warning"><i class="bi bi-hourglass-split me-1"></i>已通过审核，等待现场扫码签到。</p>
+                    {% endif %}
+                {% elif my_registration.status == 'pending' %}
+                    <p class="text-secondary">等待社团管理员审核。</p>
+                {% elif my_registration.status == 'rejected' %}
+                    <p class="text-danger">报名未通过：{{ my_registration.review_comment or '无备注' }}</p>
+                {% endif %}
+                {% if my_registration.status in ('pending', 'approved') %}
+                <form method="post" action="{{ url_for('registration.cancel', reg_id=my_registration.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-sm" data-confirm="确定取消报名吗？"><i class="bi bi-x-circle me-1"></i>取消报名</button>
+                </form>
+                {% endif %}
+            {% elif activity.status != 'cancelled' %}
+                {% if activity.is_full %}
+                    <p class="text-danger">该活动报名人数已满。</p>
+                {% else %}
+                <form method="post" action="{{ url_for('registration.apply', activity_id=activity.id) }}">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>立即报名</button>
+                </form>
+                {% endif %}
+            {% else %}
+                <p class="text-danger">该活动已取消，无法报名。</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- 已通过名单 -->
+        <div class="card p-4 mb-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-people me-1"></i>已通过报名名单（{{ activity.approved_count }}人）</h6>
+            <div class="d-flex flex-wrap gap-2">
+                {% for r in activity.registrations %}
+                    {% if r.status == 'approved' %}
+                    <span class="badge bg-light text-dark border">
+                        {{ r.user.real_name or r.user.username }}
+                        {% if r.checkin %}<i class="bi bi-patch-check-fill text-success ms-1" title="已签到"></i>{% endif %}
+                    </span>
+                    {% endif %}
+                {% endfor %}
+                {% if not activity.registrations.filter_by(status='approved').count() %}
+                    <span class="text-secondary">暂无通过审核的报名。</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 侧栏 -->
+    <div class="col-lg-4">
+        <div class="card p-4 mb-4">
+            <h6 class="fw-bold"><i class="bi bi-pie-chart me-1"></i>报名统计</h6>
+            <div class="row text-center my-3">
+                <div class="col-4"><div class="fs-4 fw-bold text-primary">{{ activity.current_participants }}</div><div class="small text-secondary">报名数</div></div>
+                <div class="col-4"><div class="fs-4 fw-bold text-success">{{ activity.approved_count }}</div><div class="small text-secondary">已通过</div></div>
+                <div class="col-4"><div class="fs-4 fw-bold text-info">{{ activity.checked_in_count }}</div><div class="small text-secondary">已签到</div></div>
+            </div>
+            <div class="progress" style="height:8px;">
+                <div class="progress-bar bg-success" style="width: {{ activity.checkin_rate }}%"></div>
+            </div>
+            <div class="small text-secondary mt-1 text-end">签到率 {{ activity.checkin_rate }}%</div>
+        </div>
+
+        {% if activity.archive and activity.archive.is_archived %}
+        <div class="card p-4 mb-4">
+            <h6 class="fw-bold text-success"><i class="bi bi-archive me-1"></i>活动已归档</h6>
+            <p class="small text-secondary mb-2">学期：{{ activity.archive.semester or '-' }} · 归档时间：{{ activity.archive.archive_time.strftime('%Y-%m-%d') }}</p>
+            <a href="{{ url_for('archive.detail', archive_id=activity.archive.id) }}" class="btn btn-sm btn-outline-success">查看活动总结</a>
+        </div>
+        {% endif %}
+
+        {% if current_user.is_authenticated and current_user.role in ('admin_club', 'admin_sys') %}
+        <div class="card p-4 mb-4">
+            <h6 class="fw-bold"><i class="bi bi-gear me-1"></i>管理操作</h6>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('admin.activity_edit', activity_id=activity.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil me-1"></i>编辑活动</a>
+                <a href="{{ url_for('admin.checkin_generate', activity_id=activity.id) }}" class="btn btn-outline-info btn-sm"><i class="bi bi-qr-code me-1"></i>生成签到码</a>
+                <a href="{{ url_for('admin.registration_review', activity_id=activity.id) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-person-check me-1"></i>报名审核</a>
+                <form method="post" action="{{ url_for('admin.activity_delete', activity_id=activity.id) }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" data-confirm="删除活动将同时删除其报名与签到记录，确定删除？"><i class="bi bi-trash me-1"></i>删除活动</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

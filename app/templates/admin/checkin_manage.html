@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}签到管理{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-qr-code me-2 text-primary"></i>签到管理</h4>
+
+<!-- 选择活动 -->
+<div class="card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label small">选择活动</label>
+            <select name="activity_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- 请选择活动 --</option>
+                {% for a in activities %}
+                <option value="{{ a.id }}" {% if activity and a.id == activity.id %}selected{% endif %}>
+                    {{ a.title }}（{{ a.start_time.strftime('%Y-%m-%d') }}）
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if activity %}
+        <div class="col-md-3 d-flex gap-2">
+            <a href="{{ url_for('admin.checkin_generate', activity_id=activity.id) }}" class="btn btn-primary"><i class="bi bi-qr-code me-1"></i>生成签到二维码</a>
+            <a href="{{ url_for('admin.checkin_export', activity_id=activity.id) }}" class="btn btn-outline-secondary"><i class="bi bi-download me-1"></i>导出数据</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+{% if activity %}
+<div class="row g-4">
+    <!-- 二维码 + 统计 -->
+    <div class="col-lg-4">
+        <div class="card p-4 text-center mb-4">
+            <h6 class="fw-bold mb-3">{{ activity.title }}</h6>
+            {% if qr_data_uri %}
+                <div class="qr-box mx-auto">
+                    <img src="{{ qr_data_uri }}" alt="签到二维码">
+                </div>
+                <p class="small text-secondary mt-3 mb-0"><i class="bi bi-alarm me-1"></i>二维码有效，请学生扫码签到</p>
+            {% else %}
+                <div class="text-secondary py-4">
+                    <i class="bi bi-qr-code fs-1 d-block mb-2"></i>
+                    尚未生成签到码<br>
+                    <a href="{{ url_for('admin.checkin_generate', activity_id=activity.id) }}" class="btn btn-sm btn-primary mt-2">立即生成</a>
+                </div>
+            {% endif %}
+        </div>
+        <div class="card p-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart me-1"></i>签到统计</h6>
+            <div class="row text-center">
+                <div class="col-4"><div class="fs-4 fw-bold text-primary">{{ stats.approved }}</div><div class="small text-secondary">已通过</div></div>
+                <div class="col-4"><div class="fs-4 fw-bold text-success">{{ stats.checked }}</div><div class="small text-secondary">已签到</div></div>
+                <div class="col-4"><div class="fs-4 fw-bold text-warning">{{ stats.unchecked }}</div><div class="small text-secondary">未签到</div></div>
+            </div>
+            <div class="progress mt-3" style="height:10px;">
+                <div class="progress-bar bg-success" style="width: {{ stats.rate }}%"></div>
+            </div>
+            <div class="text-center small text-secondary mt-2">签到率 <strong>{{ stats.rate }}%</strong></div>
+        </div>
+    </div>
+
+    <!-- 签到名单 -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white"><strong>签到名单</strong></div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>学号</th>
+                            <th>签到时间</th>
+                            <th>方式</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in checkins %}
+                        <tr>
+                            <td class="fw-bold">{{ c.user.real_name or c.user.username }}</td>
+                            <td>{{ c.user.student_id or '-' }}</td>
+                            <td class="small text-secondary">{{ c.checkin_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td><span class="badge bg-info text-dark">{{ c.checkin_type_label }}</span></td>
+                            <td>{% if c.status == 'success' %}<span class="badge bg-success">成功</span>{% else %}<span class="badge bg-danger">失败</span>{% endif %}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-secondary py-4">暂无签到记录。</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 手动补签 -->
+        <div class="card mt-4">
+            <div class="card-header bg-white"><strong>手动补签</strong></div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.checkin_manual') }}" class="row g-2">
+                    <input type="hidden" name="activity_id" value="{{ activity.id }}">
+                    <div class="col-md-8">
+                        <select name="registration_id" class="form-select">
+                            <option value="">-- 选择已通过报名且未签到的用户 --</option>
+                            {% for r in activity.registrations %}
+                                {% if r.status == 'approved' and not r.checkin %}
+                                <option value="{{ r.id }}">{{ r.user.real_name or r.user.username }}（{{ r.user.student_id or '无学号' }}）</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-outline-success w-100"><i class="bi bi-person-check me-1"></i>手动签到</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center text-secondary py-5">
+    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+    请先选择一个活动进行签到管理。
+</div>
+{% endif %}
+{% endblock %}

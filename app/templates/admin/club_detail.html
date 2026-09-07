@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}社团详情 - {{ club.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-shield me-2 text-primary"></i>{{ club.name }}</h4>
+    <a href="{{ url_for('admin.club_edit', club_id=club.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i>编辑社团</a>
+</div>
+
+<div class="card p-4 mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="d-flex align-items-center">
+                <div class="club-icon me-2" style="width:56px;height:56px;font-size:1.4rem;">{{ club.name[0] }}</div>
+                <div>
+                    <div class="fw-bold">{{ club.category or '未分类' }}</div>
+                    <div class="small text-secondary">创建于 {{ club.created_at.strftime('%Y-%m-%d') if club.created_at else '-' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <p class="mb-0 text-secondary">{{ club.description or '暂无简介' }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- 活动统计 -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-box bg-primary text-center"><div class="num">{{ stats.total }}</div><div class="small">总活动</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-box bg-success text-center"><div class="num">{{ stats.ongoing }}</div><div class="small">进行中</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-box bg-secondary text-center"><div class="num">{{ stats.registrations }}</div><div class="small">报名人次</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-box bg-info text-center"><div class="num">{{ stats.checkins }}</div><div class="small">签到人次</div></div></div>
+</div>
+
+<div class="row g-4">
+    <!-- 成员管理 -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <strong>社团成员（{{ members | length }}人）</strong>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.club_add_member', club_id=club.id) }}" class="row g-2 mb-3">
+                    <div class="col-md-8">
+                        <input type="text" name="username" class="form-control" placeholder="输入用户名添加成员" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-person-plus me-1"></i>添加成员</button>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr><th>用户名</th><th>姓名</th><th>角色</th><th class="text-end">操作</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for m in members %}
+                            <tr>
+                                <td class="fw-bold">{{ m.username }}</td>
+                                <td>{{ m.real_name or '-' }}</td>
+                                <td>
+                                    {% if m.role == 'admin_club' and m.club_id == club.id %}
+                                    <span class="badge bg-warning text-dark">社团管理员</span>
+                                    {% elif m.role == 'admin_sys' %}
+                                    <span class="badge bg-danger">系统管理员</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark border">成员</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if m.role == 'admin_club' and m.club_id == club.id %}
+                                    <form method="post" action="{{ url_for('admin.club_revoke_admin', club_id=club.id, user_id=m.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" data-confirm="确定解除其管理员身份吗？">解除管理</button>
+                                    </form>
+                                    {% elif m.role != 'admin_sys' %}
+                                    <form method="post" action="{{ url_for('admin.club_appoint_admin', club_id=club.id, user_id=m.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">任命管理</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if m.id != current_user.id and m.role != 'admin_sys' %}
+                                    <form method="post" action="{{ url_for('admin.club_remove_member', club_id=club.id, user_id=m.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="确定将该成员移出社团吗？">移除</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center text-secondary py-3">暂无成员。</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 近期活动 -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-white"><strong>近期活动</strong></div>
+            <div class="list-group list-group-flush">
+                {% for a in recent_activities %}
+                <a href="{{ url_for('activity.detail', activity_id=a.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold text-truncate">{{ a.title }}</span>
+                        <span class="badge bg-{{ a.status }}">{{ a.status_label }}</span>
+                    </div>
+                    <small class="text-secondary">{{ a.start_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                </a>
+                {% else %}
+                <div class="list-group-item text-center text-secondary">暂无活动。</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

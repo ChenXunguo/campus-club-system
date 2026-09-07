@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}我的签到记录{% endblock %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-qr-code me-2 text-primary"></i>我的签到记录</h4>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>活动</th>
+                    <th>社团</th>
+                    <th>签到时间</th>
+                    <th>签到方式</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in checkins %}
+                <tr>
+                    <td><a href="{{ url_for('activity.detail', activity_id=c.activity_id) }}" class="fw-bold text-decoration-none">{{ c.activity.title }}</a></td>
+                    <td>{{ c.activity.club.name if c.activity.club else '-' }}</td>
+                    <td class="small text-secondary">{{ c.checkin_time.strftime('%Y-%m-%d %H:%M:%S') if c.checkin_time else '-' }}</td>
+                    <td><span class="badge bg-info text-dark">{{ c.checkin_type_label }}</span></td>
+                    <td>
+                        {% if c.status == 'success' %}<span class="badge bg-success">成功</span>
+                        {% else %}<span class="badge bg-danger">失败</span>{% endif %}
+                    </td>
+                    <td><a href="{{ url_for('activity.detail', activity_id=c.activity_id) }}" class="btn btn-sm btn-outline-primary">查看活动</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-secondary py-4">暂无签到记录。</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

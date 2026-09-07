@@ -1,0 +1,149 @@
+/* 校园社团活动管理系统 —— 全局样式 */
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --accent: #0ea5e9;
+    --bg-light: #f5f7fb;
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --card-shadow: 0 4px 16px rgba(30, 60, 114, 0.08);
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main { flex: 1; }
+
+/* 顶部导航 */
+.navbar-custom {
+    background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 60%, #0ea5e9 100%);
+    box-shadow: 0 2px 10px rgba(30, 64, 175, 0.25);
+}
+.navbar-custom .navbar-brand {
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff !important;
+}
+.navbar-custom .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    border-radius: 6px;
+    padding: .45rem .8rem;
+}
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.15);
+}
+.navbar-custom .dropdown-menu .nav-link { color: var(--text-main) !important; }
+
+/* 卡片 */
+.card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+}
+.card-hover { transition: transform .18s ease, box-shadow .18s ease; }
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(30, 60, 114, 0.14);
+}
+
+/* 活动卡片封面 */
+.activity-cover {
+    height: 160px;
+    background-size: cover;
+    background-position: center;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 2rem;
+}
+.activity-cover-sm { height: 100px; }
+
+/* 状态标签 */
+.badge { font-weight: 500; padding: .4em .7em; }
+.badge-pending { background: #f59e0b; color: #fff; }
+.badge-ongoing { background: #10b981; color: #fff; }
+.badge-ended { background: #6b7280; color: #fff; }
+.badge-cancelled { background: #ef4444; color: #fff; }
+.badge-approved { background: #10b981; color: #fff; }
+.badge-rejected { background: #ef4444; color: #fff; }
+.badge-cancelled-reg { background: #94a3b8; color: #fff; }
+.badge-pending-reg { background: #f59e0b; color: #fff; }
+
+/* 统计块 */
+.stat-box {
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    color: #fff;
+}
+.stat-box .num { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+
+/* 首页 hero */
+.hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0ea5e9 100%);
+    color: #fff;
+    border-radius: 18px;
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.hero h1 { font-weight: 800; }
+
+/* 登录/注册卡片 */
+.auth-card { max-width: 460px; margin: 3rem auto; }
+
+/* 富文本内容 */
+.rich-content img { max-width: 100%; }
+.rich-content { line-height: 1.8; }
+
+/* 表单 */
+.form-label { font-weight: 600; color: #374151; }
+.btn-primary { background: var(--primary); border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+/* 页脚 */
+footer {
+    background: #111827;
+    color: #9ca3af;
+    padding: 1.2rem 0;
+    margin-top: 3rem;
+}
+
+/* 二维码容器 */
+.qr-box {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 1.5rem;
+    display: inline-block;
+}
+.qr-box img { width: 240px; height: 240px; }
+
+/* 表格 */
+.table thead th {
+    background: #f1f5f9;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 列表页封面文字 */
+.club-icon {
+    width: 46px; height: 46px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+}

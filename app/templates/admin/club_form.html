@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑社团' if club else '创建社团' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card p-4">
+            <h4 class="mb-4"><i class="bi bi-{{ 'pencil' if club else 'plus-circle' }} me-2 text-primary"></i>{{ '编辑社团' if club else '创建社团' }}</h4>
+            {% set v = club or form %}
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">社团名称 <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" required value="{{ v.name or '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">社团类别</label>
+                    <input type="text" name="category" class="form-control" value="{{ v.category or '' }}" placeholder="例如：文体类 / 学术类 / 公益类 / 兴趣类">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">社团简介</label>
+                    <textarea name="description" class="form-control" rows="5" placeholder="介绍社团的宗旨、活动等">{{ v.description or '' }}</textarea>
+                </div>
+                {% if club %}
+                <div class="mb-3">
+                    <label class="form-label">状态</label>
+                    <select name="status" class="form-select">
+                        <option value="active" {% if club.status == 'active' %}selected{% endif %}>正常</option>
+                        <option value="inactive" {% if club.status == 'inactive' %}selected{% endif %}>停用</option>
+                    </select>
+                </div>
+                {% endif %}
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ '保存修改' if club else '创建社团' }}</button>
+                    <a href="{{ url_for('admin.club_list') }}" class="btn btn-outline-secondary">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
